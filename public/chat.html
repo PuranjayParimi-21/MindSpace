@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat | MindSpace</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <header>
+    <a href="home.html" class="logo"><img src="images/logo.png" alt="MindSpace" style="height: 35px; width: 35px; border-radius: 8px; vertical-align: middle;"> MindSpace</a>
+    <nav>
+      <a href="home.html">Home</a>
+      <a href="diary.html">Diary</a>
+      <a href="chat.html" class="active">Chat</a>
+      <a href="relax.html">Relax</a>
+    </nav>
+  </header>
+
+  <main class="glass-container fade-in">
+    <h2>Anonymous Support Chat</h2>
+    <p class="text-muted">A safe space to talk with others. You are completely anonymous.</p>
+
+    <div class="chat-window" id="chat-window">
+      <!-- Messages appear here -->
+    </div>
+
+    <div class="chat-input-area">
+      <input type="text" id="chat-input" placeholder="Type a message...">
+      <button id="send-chat" class="btn btn-accent">Send</button>
+    </div>
+  </main>
+
+  <script src="js/chat.js"></script>
+  <script src="js/chatbot.js"></script>
+</body>
+</html>

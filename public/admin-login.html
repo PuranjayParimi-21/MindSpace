@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NGO Admin Login | MindSpace</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="background: linear-gradient(135deg, #fcdada 0%, #f8b1b1 100%);">
+  <header style="justify-content: center; margin-bottom: 2rem;">
+    <a href="home.html" class="logo" style="font-size: 2.2rem; color: #d90429;"><img src="images/logo.png" alt="MindSpace" style="height: 40px; width: 40px; border-radius: 8px; vertical-align: middle;"> MindSpace Admin</a>
+  </header>
+
+  <main class="glass-container fade-in" style="max-width: 500px; text-align: center; border-color: rgba(217, 4, 41, 0.3);">
+    <h2 style="color: #d90429;">Secure NGO Access</h2>
+    <p class="text-muted" style="margin-bottom: 2rem;">Authorized personnel only. Please sign in to access the analytics dashboard.</p>
+
+    <!-- Admin Login Form -->
+    <form id="admin-auth-form" style="text-align: left;">
+      <label for="admin-username" style="font-weight: 500;">Admin ID</label>
+      <input type="text" id="admin-username" placeholder="Enter admin username" required>
+      
+      <label for="admin-password" style="font-weight: 500;">Password</label>
+      <input type="password" id="admin-password" placeholder="Enter admin password" required>
+      
+      <button type="submit" id="submit-admin-auth" class="btn" style="width: 100%; margin-top: 1rem; background: #d90429;">Access Dashboard</button>
+    </form>
+
+    <div style="margin-top: 1.5rem;">
+      <a href="index.html" style="font-size: 0.9rem; color: var(--text-dark); text-decoration: none;">&larr; Return to Home</a>
+    </div>
+
+  </main>
+
+  <div id="admin-auth-error" style="color: #d90429; margin-top: 1rem; text-align: center; font-weight: bold;"></div>
+
+  <script src="js/admin-login.js"></script>
+</body>
+</html>

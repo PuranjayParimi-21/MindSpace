@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | MindSpace</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header style="justify-content: center; margin-bottom: 2rem;">
+    <a href="#" class="logo" style="font-size: 2.2rem;"><img src="images/logo.png" alt="MindSpace" style="height: 40px; width: 40px; border-radius: 8px; vertical-align: middle;"> MindSpace</a>
+  </header>
+
+  <main class="glass-container fade-in" style="max-width: 500px; text-align: center;">
+    <h2>Welcome</h2>
+    <p class="text-muted" style="margin-bottom: 2rem;">Sign in or create an account to persist your progress across devices.</p>
+
+    <!-- Options -->
+    <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+      <button id="tab-login" class="btn btn-accent" style="flex: 1; margin-right: 5px; border-radius: 10px;">Login</button>
+      <button id="tab-register" class="btn" style="flex: 1; margin-left: 5px; border-radius: 10px; background: rgba(255,255,255,0.4); color: var(--text-dark);">Register</button>
+    </div>
+
+    <!-- Login/Register Form -->
+    <form id="auth-form" style="text-align: left;">
+      <label for="username" style="font-weight: 500;">Username / Admin ID</label>
+      <input type="text" id="username" placeholder="Enter your username" required>
+      
+      <label for="password" style="font-weight: 500;">Password</label>
+      <input type="password" id="password" placeholder="Enter your password" required>
+      
+      <button type="submit" id="submit-auth" class="btn btn-accent" style="width: 100%; margin-top: 1rem;">Sign In</button>
+    </form>
+
+    <div style="margin: 2rem 0; text-transform: uppercase; font-size: 0.8rem; color: var(--text-light); letter-spacing: 2px;">or</div>
+
+    <!-- Anonymous Flow -->
+    <button id="btn-anonymous" class="btn" style="width: 100%; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: var(--text-dark);">
+      Continue Anonymously
+    </button>
+    
+    <div style="margin-top: 2rem;">
+      <a href="index.html" style="font-size: 0.9rem; color: var(--text-dark); text-decoration: none;">&larr; Return to Home</a>
+    </div>
+  </main>
+
+  <!-- Error display -->
+  <div id="auth-error" style="color: red; margin-top: 1rem; text-align: center;"></div>
+
+  <script src="js/login.js"></script>
+</body>
+</html>

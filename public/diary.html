@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Diary | MindSpace</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <a href="home.html" class="logo"><img src="images/logo.png" alt="MindSpace" style="height: 35px; width: 35px; border-radius: 8px; vertical-align: middle;"> MindSpace</a>
+    <nav>
+      <a href="home.html">Home</a>
+      <a href="diary.html" class="active">Diary</a>
+      <a href="chat.html">Chat</a>
+      <a href="relax.html">Relax</a>
+    </nav>
+  </header>
+
+  <main class="glass-container fade-in">
+    <h2>Personal Diary</h2>
+    <p class="text-muted">Write your thoughts. Works offline too!</p>
+
+    <div style="margin-top: 1rem;">
+      <input type="text" id="diary-title" placeholder="Entry Title (e.g., A good day)">
+      <textarea id="diary-content" rows="6" placeholder="Dear Diary..."></textarea>
+      <button id="save-diary" class="btn btn-accent">Save Entry</button>
+      <span id="sync-status" class="text-muted" style="margin-left: 10px;">🟢 Online</span>
+    </div>
+
+    <h3 style="margin-top: 2rem;">Previous Entries</h3>
+    <div id="diary-list" style="margin-top: 1rem;">
+      <!-- Entries populated by JS -->
+    </div>
+  </main>
+
+  <script src="js/diary.js"></script>
+  <script src="js/chatbot.js"></script>
+</body>
+</html>

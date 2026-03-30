@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindSpace | Smart Mental Health</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <a href="home.html" class="logo"><img src="images/logo.png" alt="MindSpace" style="height: 35px; width: 35px; border-radius: 8px; vertical-align: middle;"> MindSpace</a>
+    <nav>
+      <a href="home.html" class="active">Home</a>
+      <a href="diary.html">Diary</a>
+      <a href="chat.html">Chat</a>
+      <a href="relax.html">Relax</a>
+    </nav>
+    <div class="streak-badge" title="Daily Streak">
+      🔥 <span id="streak-count">0</span>
+    </div>
+  </header>
+
+  <main class="glass-container fade-in">
+    <h2>How are you feeling today?</h2>
+    <p class="text-muted">Select an emoji that best matches your mood.</p>
+    
+    <div class="mood-grid">
+      <button class="mood-btn" data-emoji="😭">😭</button>
+      <button class="mood-btn" data-emoji="😟">😟</button>
+      <button class="mood-btn" data-emoji="😐">😐</button>
+      <button class="mood-btn" data-emoji="😊">😊</button>
+      <button class="mood-btn" data-emoji="🤩">🤩</button>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <textarea id="mood-note" rows="3" placeholder="Care to share more? (Optional)"></textarea>
+      <button id="submit-mood" class="btn btn-accent" style="width: 100%">Log Mood</button>
+    </div>
+  </main>
+
+  <aside id="suggestions-box" class="glass-container fade-in hidden">
+    <h3>💡 Suggestions for You</h3>
+    <ul id="suggestions-list"></ul>
+    
+    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border)">
+      <h4>🤖 AI Support Bot</h4>
+      <p id="chatbot-response" style="font-style: italic; color: var(--primary)"></p>
+    </div>
+  </aside>
+
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+</body>
+</html>
