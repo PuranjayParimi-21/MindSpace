@@ -140,29 +140,70 @@
     </nav>
   </header>
 
-  <main class="glass-container chat-container fade-in">
+  <main class="glass-container chat-container fade-in" style="max-width: 900px; height: auto; min-height: 800px;">
     <div class="chat-header">
       <div>
-        <h2 style="margin:0; font-size: 1.8rem; letter-spacing: -0.04em;">Safe Connection</h2>
-        <p class="text-muted" style="margin:0; font-size: 0.9rem;">You are anonymous. Your peer is too.</p>
+        <h2 style="margin:0; font-size: 1.8rem; letter-spacing: -0.04em;">Community Hub</h2>
+        <p class="text-muted" style="margin:0; font-size: 0.9rem;">A safe, anonymous space for mutual support.</p>
       </div>
-      <div id="chat-status" class="matching">
-        <span class="status-pulse"></span> Searching for partner...
-      </div>
-    </div>
-    
-    <div class="chat-window" id="chat-window">
-      <!-- Loading state or info -->
-      <div style="text-align: center; margin: auto; padding: 2rem;">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🤝</div>
-        <p class="text-muted" style="max-width: 300px; margin: 0 auto;">Establishing an encrypted, anonymous link for your session.</p>
+      <div class="streak-badge">
+        🔥 <span id="user-streak">1</span> Day Streak
       </div>
     </div>
 
-    <div class="chat-input-wrapper">
-      <input type="text" id="chat-input" placeholder="Type naturally, be yourself..." autocomplete="off">
-      <button id="send-chat" class="btn btn-accent" style="padding: 0.8rem 2rem; border-radius: 18px;">Send ✨</button>
-      <button id="skip-btn" class="skip-btn" style="display: none;">Next Peer ⏭</button>
+    <div class="community-tabs">
+      <button class="tab-btn active" id="tab-feed">Community Feed</button>
+      <button class="tab-btn" id="tab-match">Safe Match (1-on-1)</button>
+    </div>
+
+    <!-- Community Feed Tab -->
+    <div id="feed-section">
+      <div class="compose-box">
+        <div class="tag-selector" id="post-tags">
+          <span class="tag-opt selected" data-tag="Vent">#Vent</span>
+          <span class="tag-opt" data-tag="Seeking Advice">#SeekingAdvice</span>
+          <span class="tag-opt" data-tag="Small Win">#SmallWin</span>
+          <span class="tag-opt" data-tag="Motivation">#Motivation</span>
+          <span class="tag-opt" data-tag="Feeling Down">#FeelingDown</span>
+          <span class="tag-opt" data-tag="Feeling Great">#FeelingGreat</span>
+        </div>
+        <textarea id="post-input" placeholder="What's on your mind? Everything is anonymous..." rows="3" style="margin-bottom: 1rem;"></textarea>
+        <div style="display: flex; justify-content: flex-end;">
+          <button id="btn-post" class="btn btn-accent" style="padding: 0.7rem 2rem;">Post Anonymously ✨</button>
+        </div>
+      </div>
+
+      <div class="community-feed" id="community-feed">
+        <!-- Posts will be injected here -->
+        <div style="text-align: center; padding: 3rem; color: var(--text-light);">
+          <div class="status-pulse" style="margin: 0 auto 1rem;"></div>
+          Loading community thoughts...
+        </div>
+      </div>
+    </div>
+
+    <!-- Match Tab (Original Chat) -->
+    <div id="match-section" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <p class="text-muted" style="margin:0;">Connect 1-on-1 with someone who cares.</p>
+        <div id="chat-status" class="matching">
+          <span class="status-pulse"></span> Searching...
+        </div>
+      </div>
+      
+      <div class="chat-window" id="chat-window" style="height: 450px;">
+        <div style="text-align: center; margin: auto; padding: 2rem;">
+          <div style="font-size: 3.5rem; margin-bottom: 1.5rem;">🤝</div>
+          <h3 style="margin-bottom: 0.5rem;">Safe Connection</h3>
+          <p class="text-muted" style="max-width: 350px; margin: 0 auto;">Establishing a private, anonymous link for your session.</p>
+        </div>
+      </div>
+
+      <div class="chat-input-wrapper">
+        <input type="text" id="chat-input" placeholder="Type naturally, be yourself..." autocomplete="off">
+        <button id="send-chat" class="btn btn-primary" style="padding: 0.8rem 2rem; border-radius: 18px;">Send ✨</button>
+        <button id="skip-btn" class="skip-btn" style="display: none;">Next Peer ⏭</button>
+      </div>
     </div>
   </main>
 

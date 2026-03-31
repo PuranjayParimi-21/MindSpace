@@ -3,362 +3,753 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | MindSpace</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>Admin Pro | MindSpace</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: rgba(255,255,255,0.06);
+      --text: #f0f4ff;
+      --muted: #8892b0;
+      --primary: #6366f1;
+      --primary-glow: rgba(99,102,241,0.25);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --accent: #ec4899;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
     body {
-      background: #f8fafc;
-      padding: 0;
-    }
-
-    /* Admin Top Nav */
-    .admin-nav {
-      background: white;
-      padding: 1rem 3rem;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      border-bottom: 1px solid #edf2f7;
     }
 
-    .admin-container {
-      max-width: 1400px;
-      margin: 3rem auto;
-      padding: 0 2rem;
-    }
-
-    .pro-header {
-      margin-bottom: 3rem;
-    }
-
-    .pro-header h1 { font-size: 2.8rem; letter-spacing: -0.05em; margin: 0; }
-    .pro-header p { font-size: 1.1rem; color: var(--text-light); margin-top: 0.5rem; }
-
-    /* Pro Metric Cards */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 2rem;
-      margin-bottom: 4rem;
-    }
-
-    .metric-card {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 32px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 260px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(0,0,0,0.02);
+      padding: 2rem 1.5rem;
+      position: fixed;
+      height: 100vh;
+      z-index: 100;
     }
 
-    .metric-card::after {
-      content: '';
-      position: absolute;
-      top: 0; right: 0;
-      width: 120px; height: 120px;
-      background: radial-gradient(circle, rgba(74, 144, 226, 0.05) 0%, transparent 70%);
-      transform: translate(30%, -30%);
-    }
-
-    .metric-icon {
-      width: 55px; height: 55px;
-      border-radius: 18px;
-      background: #f1f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .metric-label {
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--text-light);
-      margin-bottom: 0.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .metric-value {
-      font-size: 3.5rem;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-      color: var(--text-dark);
-      line-height: 1;
-    }
-
-    /* Chart Panels */
-    .pro-panel {
-      background: white;
-      border-radius: 32px;
-      padding: 2.5rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-      margin-bottom: 2.5rem;
-      border: 1px solid rgba(0,0,0,0.02);
-    }
-
-    .panel-title {
-      font-size: 1.4rem;
-      font-weight: 800;
-      margin-bottom: 2rem;
+    .sidebar-logo {
       display: flex;
       align-items: center;
       gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text);
+      text-decoration: none;
+      margin-bottom: 3rem;
+      letter-spacing: -0.03em;
     }
 
-    .chart-box { height: 400px; width: 100%; }
+    .sidebar-logo img { width: 38px; height: 38px; border-radius: 10px; }
 
-    /* Dashboard Layout */
-    .pro-layout {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 2.5rem;
+    .sidebar-section {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin: 1.5rem 0 0.8rem;
     }
 
-    @media (max-width: 1024px) {
-      .pro-layout {
-        grid-template-columns: 1fr;
-      }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0.75rem 1rem;
+      border-radius: 14px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      margin-bottom: 4px;
     }
 
-    /* Alerts List */
-    .alert-scroll {
-      max-height: 600px;
+    .sidebar-item:hover { background: var(--surface2); color: var(--text); }
+    .sidebar-item.active { background: var(--primary-glow); color: var(--primary); }
+    .sidebar-item .icon { font-size: 1.1rem; width: 24px; text-align: center; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Main Content ── */
+    .main {
+      margin-left: 260px;
+      flex: 1;
+      padding: 2.5rem 3rem;
       overflow-y: auto;
-      padding-right: 15px;
+      min-height: 100vh;
     }
 
-    .alert-card {
-      background: #fff5f5;
-      padding: 1.5rem;
-      border-radius: 20px;
-      margin-bottom: 1.2rem;
-      border-left: 5px solid #e11d48;
-      transition: all 0.3s ease;
-    }
-
-    .alert-card:hover { transform: translateX(8px); }
-
-    .alert-header {
+    /* ── Top Bar ── */
+    .topbar {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 0.8rem;
+      align-items: center;
+      margin-bottom: 2.5rem;
     }
 
-    .alert-user { font-weight: 800; color: #991b1b; }
-    .alert-level { background: #e11d48; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; }
+    .topbar h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+
+    .topbar-actions { display: flex; gap: 1rem; align-items: center; }
+
+    .badge-live {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-live::before {
+      content: '';
+      width: 8px; height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .btn-pro {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.3rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-pro:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.6rem 1.3rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-ghost:hover { color: var(--text); }
+
+    /* ── Metric Cards ── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (max-width: 1200px) {
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 1.8rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .metric-card .glow {
+      position: absolute;
+      width: 150px; height: 150px;
+      border-radius: 50%;
+      top: -40px; right: -40px;
+      filter: blur(60px);
+      opacity: 0.2;
+    }
+
+    .metric-icon-wrap {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .metric-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-value {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    /* ── Wellness Score ── */
+    .wellness-banner {
+      background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+      border-radius: 24px;
+      padding: 2rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wellness-banner::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+      top: -100px; right: -80px;
+    }
+
+    .wellness-text h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .wellness-text p { opacity: 0.8; font-size: 0.95rem; }
+
+    .wellness-score-badge {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 1rem 2rem;
+      text-align: center;
+    }
+
+    .wellness-score-badge .score { font-size: 3rem; font-weight: 900; }
+    .wellness-score-badge .score-label { font-size: 0.8rem; opacity: 0.8; font-weight: 600; }
+
+    /* ── Charts Grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    @media (max-width: 1100px) {
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2rem;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .panel-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .chart-wrap { height: 280px; }
+
+    /* ── Tables ── */
+    .table-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      margin-bottom: 2.5rem;
+    }
+
+    .table-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: var(--surface2);
+      padding: 1rem 1.5rem;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    tbody tr:hover { background: var(--surface2); }
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      padding: 1rem 1.5rem;
+      font-size: 0.9rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .tag-admin { background: rgba(99,102,241,0.2); color: var(--primary); }
+    .tag-user { background: rgba(16,185,129,0.15); color: var(--success); }
+
+    /* ── Alerts ── */
+    .alerts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .alert-row {
+      background: rgba(239,68,68,0.05);
+      border: 1px solid rgba(239,68,68,0.15);
+      border-left: 4px solid var(--danger);
+      border-radius: 16px;
+      padding: 1.2rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .alert-row:hover { transform: translateX(6px); background: rgba(239,68,68,0.08); }
+    .alert-row .emoji { font-size: 1.5rem; margin-right: 12px; }
+    .alert-row .user-id { font-weight: 700; font-size: 0.85rem; color: #fca5a5; }
+    .alert-row .note { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+    .stress-badge { background: var(--danger); color: white; padding: 4px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; }
+
+    /* ── Animations ── */
+    .fade-up {
+      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
   </style>
 </head>
 <body>
-  <nav class="admin-nav">
-    <a href="index.html" class="logo">
-      <img src="images/logo.png" alt="MindSpace" style="height: 38px; width: 38px; border-radius: 10px; vertical-align: middle;">
-      MindSpace Pro
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-logo">
+      <img src="images/logo.png" alt="MindSpace">
+      MindSpace
     </a>
-    <button id="btn-logout-admin" class="btn btn-accent" style="background: #e11d48; border-radius: 14px; padding: 0.6rem 1.2rem;">Log Out</button>
-  </nav>
 
-  <div class="admin-container fade-in">
-    <div class="pro-header">
-      <h1>Global Insights</h1>
-      <p>Performance metrics and high-priority wellness alerts.</p>
+    <div class="sidebar-section">Overview</div>
+    <a href="#" class="sidebar-item active">
+      <span class="icon">📊</span> Dashboard
+    </a>
+    <a href="#section-users" class="sidebar-item">
+      <span class="icon">👥</span> Users
+    </a>
+    <a href="#section-alerts" class="sidebar-item">
+      <span class="icon">🚨</span> Alerts
+    </a>
+
+    <div class="sidebar-section">Analytics</div>
+    <a href="#section-charts" class="sidebar-item">
+      <span class="icon">📈</span> Mood Trends
+    </a>
+    <a href="#section-charts" class="sidebar-item">
+      <span class="icon">🧠</span> Stress Index
+    </a>
+
+    <div class="sidebar-footer">
+      <button id="btn-logout-admin" class="btn-ghost" style="width: 100%;">🔓 Log Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- Top Bar -->
+    <div class="topbar fade-up">
+      <div>
+        <h1>Global Insights</h1>
+        <p style="color: var(--muted); margin-top: 4px; font-size: 0.9rem;">NGO Admin • Real-time community health metrics</p>
+      </div>
+      <div class="topbar-actions">
+        <span class="badge-live">Live Data</span>
+        <button class="btn-ghost" id="btn-refresh">↻ Refresh</button>
+        <button class="btn-pro" id="btn-export">⬇ Export CSV</button>
+      </div>
     </div>
 
-    <!-- Top Stats -->
+    <!-- Metric Cards -->
     <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-icon">👥</div>
-        <div class="metric-label">Registered users</div>
-        <div id="stat-users" class="metric-value">--</div>
+      <div class="metric-card fade-up delay-1">
+        <div class="glow" style="background: #6366f1;"></div>
+        <div class="metric-icon-wrap" style="background: rgba(99,102,241,0.15);">👥</div>
+        <div class="metric-label">Registered Users</div>
+        <div class="metric-value" id="stat-users" style="color: var(--primary);">--</div>
+        <div class="metric-sub">Total platform members</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-icon">📈</div>
-        <div class="metric-label">Mood logs (Total)</div>
-        <div id="stat-moods" class="metric-value">--</div>
+      <div class="metric-card fade-up delay-2">
+        <div class="glow" style="background: #10b981;"></div>
+        <div class="metric-icon-wrap" style="background: rgba(16,185,129,0.15);">📈</div>
+        <div class="metric-label">Mood Logs</div>
+        <div class="metric-value" id="stat-moods" style="color: var(--success);">--</div>
+        <div class="metric-sub">Total check-ins recorded</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-icon">🧘</div>
-        <div class="metric-label">Avg stress Index</div>
-        <div id="stat-stress" class="metric-value">--</div>
+      <div class="metric-card fade-up delay-3">
+        <div class="glow" style="background: #f59e0b;"></div>
+        <div class="metric-icon-wrap" style="background: rgba(245,158,11,0.15);">🧘</div>
+        <div class="metric-label">Avg Stress Index</div>
+        <div class="metric-value" id="stat-stress" style="color: var(--warning);">--</div>
+        <div class="metric-sub">Scale of 0 – 10</div>
+      </div>
+      <div class="metric-card fade-up delay-4">
+        <div class="glow" style="background: #ef4444;"></div>
+        <div class="metric-icon-wrap" style="background: rgba(239,68,68,0.15);">🚨</div>
+        <div class="metric-label">High Stress Alerts</div>
+        <div class="metric-value" id="stat-alerts" style="color: var(--danger);">--</div>
+        <div class="metric-sub">Stress level ≥ 8</div>
       </div>
     </div>
 
-    <!-- Full Width Trends -->
-    <div class="pro-panel">
-      <div class="panel-title">📉 Global Community Engagement</div>
-      <div class="chart-box">
-        <canvas id="barChart"></canvas>
+    <!-- Wellness Score Banner -->
+    <div class="wellness-banner fade-up delay-2">
+      <div class="wellness-text">
+        <h2>Community Wellness Score</h2>
+        <p>Calculated from mood logs, stress levels, and engagement.<br>Higher is healthier. Target: above 70.</p>
+      </div>
+      <div class="wellness-score-badge">
+        <div class="score" id="wellness-score">--</div>
+        <div class="score-label">/ 100</div>
       </div>
     </div>
 
-    <div class="pro-layout">
-      <!-- Left Column -->
-      <div class="pro-col">
-        <div class="pro-panel">
-          <div class="panel-title">🧠 Stress Trajectory</div>
-          <div class="chart-box" style="height: 300px;">
-            <canvas id="lineChart"></canvas>
-          </div>
+    <!-- Charts -->
+    <div class="charts-grid fade-up delay-3" id="section-charts">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">📉 Community Engagement (14 Days)</div>
         </div>
-        <div class="pro-panel">
-          <div class="panel-title">📊 Community Distribution</div>
-          <div class="chart-box" style="height: 300px;">
-            <canvas id="doughnutChart"></canvas>
-          </div>
-        </div>
+        <div class="chart-wrap"><canvas id="barChart"></canvas></div>
       </div>
-
-      <!-- Right Column: Priority Alerts -->
-      <div class="pro-col">
-        <div class="pro-panel" style="border-top: 6px solid #e11d48; height: calc(100% - 2.5rem);">
-          <div class="panel-title" style="color: #e11d48;">🚨 Priority Alerts</div>
-          <div class="alert-scroll" id="alerts-list">
-            <p class="text-muted">Loading pulse data...</p>
-          </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">📊 Stress Distribution</div>
         </div>
+        <div class="chart-wrap"><canvas id="doughnutChart"></canvas></div>
       </div>
     </div>
-  </div>
+
+    <div class="panel fade-up delay-3" style="margin-bottom: 2.5rem;">
+      <div class="panel-header">
+        <div class="panel-title">🧠 Stress Trajectory</div>
+      </div>
+      <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-panel fade-up delay-4" id="section-users">
+      <div class="table-header">
+        <div class="panel-title">👥 All Users</div>
+        <span style="font-size: 0.85rem; color: var(--muted);">Latest 50 accounts</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>User ID</th>
+            <th>Role</th>
+            <th>🔥 Streak</th>
+            <th>Last Active</th>
+            <th>Member Since</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody">
+          <tr><td colspan="5" style="text-align:center; padding: 3rem; color: var(--muted);">Loading users...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Priority Alerts -->
+    <div class="panel fade-up delay-5" id="section-alerts">
+      <div class="panel-header">
+        <div class="panel-title" style="color: var(--danger);">🚨 Priority Alerts — High Stress Users</div>
+      </div>
+      <div class="alerts-grid" id="alerts-list">
+        <p style="color: var(--muted); text-align:center; padding: 2rem;">Loading alerts...</p>
+      </div>
+    </div>
+  </main>
 
   <script>
-    const API_URL = 'http://localhost:3000/api';
+    const API = '/api';
     Chart.defaults.font.family = "'Outfit', sans-serif";
-    Chart.defaults.color = '#718096';
+    Chart.defaults.color = '#8892b0';
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      document.getElementById('btn-logout-admin').addEventListener('click', () => {
-        localStorage.removeItem('admin_token');
-        window.location.href = 'index.html';
+    // Counter animation
+    function animateCount(el, target, isDecimal = false) {
+      let start = 0;
+      const step = target / 40;
+      const timer = setInterval(() => {
+        start += step;
+        if (start >= target) { start = target; clearInterval(timer); }
+        el.innerText = isDecimal ? start.toFixed(1) : Math.floor(start);
+      }, 30);
+    }
+
+    document.getElementById('btn-logout-admin').addEventListener('click', () => {
+      localStorage.removeItem('admin_token');
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('btn-refresh').addEventListener('click', () => loadData());
+
+    document.getElementById('btn-export').addEventListener('click', () => {
+      const rows = document.querySelectorAll('#users-tbody tr');
+      let csv = 'UserID,Role,Streak,LastActive,MemberSince\n';
+      rows.forEach(r => {
+        const cells = r.querySelectorAll('td');
+        if (cells.length > 1) {
+          csv += Array.from(cells).map(c => `"${c.innerText.trim()}"`).join(',') + '\n';
+        }
       });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = `mindspace_users_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    });
 
+    let barChart, lineChart, doughnutChart;
+
+    async function loadData() {
       const token = localStorage.getItem('admin_token');
       if (!token) { window.location.href = 'admin-login.html'; return; }
+      const headers = { 'Authorization': `Bearer ${token}` };
 
       try {
-        const res = await fetch(`${API_URL}/admin/stats`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        
-        if (data.error) {
-          window.location.href = 'admin-login.html';
-          return;
-        }
+        const [statsRes, usersRes] = await Promise.all([
+          fetch(`${API}/admin/stats`, { headers }),
+          fetch(`${API}/admin/users`, { headers })
+        ]);
+        const data = await statsRes.json();
+        const users = await usersRes.json();
 
-        // Stats
-        document.getElementById('stat-users').innerText = data.totalUsers || 0;
-        document.getElementById('stat-moods').innerText = data.totalMoods || 0;
-        document.getElementById('stat-stress').innerText = data.avgStress ? data.avgStress.toFixed(1) : '0.0';
+        if (data.error) { window.location.href = 'admin-login.html'; return; }
 
-        // Alerts
-        const list = document.getElementById('alerts-list');
-        list.innerHTML = '';
-        if (data.recentAlerts?.length > 0) {
-          data.recentAlerts.forEach(a => {
-            const card = document.createElement('div');
-            card.className = 'alert-card';
-            card.innerHTML = `
-              <div class="alert-header">
-                <span class="alert-user">${a.userId?.anonymousId?.substring(0,8) || 'Anon'}...</span>
-                <span class="alert-level">LV ${a.stressLevel}</span>
-              </div>
-              <div style="font-size: 0.95rem; line-height: 1.5;">
-                <span style="font-size: 1.4rem; margin-right: 10px;">${a.emoji}</span>
-                ${a.note ? `<span style="font-style: italic;">"${a.note}"</span>` : 'No comment provided.'}
-              </div>
+        // Metric cards
+        animateCount(document.getElementById('stat-users'), data.totalUsers || 0);
+        animateCount(document.getElementById('stat-moods'), data.totalMoods || 0);
+        animateCount(document.getElementById('stat-stress'), parseFloat((data.avgStress || 0).toFixed(1)), true);
+        animateCount(document.getElementById('stat-alerts'), data.recentAlerts?.length || 0);
+
+        // Wellness Score (inverse of stress, scaled)
+        const wellness = Math.round(100 - ((data.avgStress || 5) / 10) * 100);
+        animateCount(document.getElementById('wellness-score'), wellness);
+
+        // Users Table
+        const tbody = document.getElementById('users-tbody');
+        tbody.innerHTML = '';
+        if (Array.isArray(users) && users.length > 0) {
+          users.forEach(u => {
+            const tr = document.createElement('tr');
+            const lastActive = u.lastActiveDate ? new Date(u.lastActiveDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Never';
+            const since = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+            const uid = (u.username || u.anonymousId || 'anonymous').substring(0, 14);
+            tr.innerHTML = `
+              <td style="font-family: monospace; font-size:0.85rem;">${uid}...</td>
+              <td><span class="tag ${u.role === 'admin' ? 'tag-admin' : 'tag-user'}">${u.role || 'user'}</span></td>
+              <td>🔥 ${u.streakCount || 0}</td>
+              <td>${lastActive}</td>
+              <td style="color: var(--muted);">${since}</td>
             `;
-            list.appendChild(card);
+            tbody.appendChild(tr);
           });
         } else {
-          list.innerHTML = '<p class="text-muted" style="text-align: center; padding-top: 4rem;">Quiet hour. No active alerts.</p>';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--muted);">No users found.</td></tr>';
+        }
+
+        // Alerts
+        const alertList = document.getElementById('alerts-list');
+        alertList.innerHTML = '';
+        if (data.recentAlerts?.length > 0) {
+          data.recentAlerts.forEach(a => {
+            const div = document.createElement('div');
+            div.className = 'alert-row';
+            div.innerHTML = `
+              <div style="display:flex; align-items:center;">
+                <span class="emoji">${a.emoji}</span>
+                <div>
+                  <div class="user-id">${a.userId?.anonymousId?.substring(0, 12) || 'Anonymous'}...</div>
+                  <div class="note">${a.note ? `"${a.note}"` : 'No note provided.'}</div>
+                </div>
+              </div>
+              <span class="stress-badge">LV ${a.stressLevel}</span>
+            `;
+            alertList.appendChild(div);
+          });
+        } else {
+          alertList.innerHTML = '<p style="text-align:center; padding: 2rem; color: var(--muted);">✅ No high-stress alerts right now. Community is doing well!</p>';
         }
 
         // Charts
-        const timeLabels = data.moodsOverTime?.map(i => i._id) || ['None'];
-        const engageData = data.moodsOverTime?.map(i => i.count) || [0];
-        const stressLineData = data.moodsOverTime?.map(i => i.avgStress || 0) || [0];
+        const timeLabels = data.moodsOverTime?.map(i => i._id) || [];
+        const engageData = data.moodsOverTime?.map(i => i.count) || [];
+        const stressLine = data.moodsOverTime?.map(i => i.avgStress || 0) || [];
 
-        // Bar
-        new Chart(document.getElementById('barChart'), {
+        if (barChart) barChart.destroy();
+        barChart = new Chart(document.getElementById('barChart'), {
           type: 'bar',
           data: {
             labels: timeLabels,
             datasets: [{
               label: 'Interactions',
               data: engageData,
-              backgroundColor: '#4a90e2',
-              borderRadius: 12
+              backgroundColor: 'rgba(99,102,241,0.7)',
+              borderRadius: 10,
+              borderSkipped: false
             }]
           },
           options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              y: { grid: { borderDash: [5, 5] }, beginAtZero: true },
+              y: { grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
               x: { grid: { display: false } }
             }
           }
         });
 
-        // Line
-        new Chart(document.getElementById('lineChart'), {
+        if (lineChart) lineChart.destroy();
+        lineChart = new Chart(document.getElementById('lineChart'), {
           type: 'line',
           data: {
             labels: timeLabels,
             datasets: [{
-              label: 'Stress Index',
-              data: stressLineData,
-              borderColor: '#e11d48',
-              backgroundColor: 'rgba(225, 29, 72, 0.05)',
+              label: 'Avg Stress',
+              data: stressLine,
+              borderColor: '#ef4444',
+              backgroundColor: 'rgba(239,68,68,0.08)',
               fill: true,
               tension: 0.4,
-              pointRadius: 6,
-              pointBackgroundColor: '#fff'
+              pointRadius: 5,
+              pointBackgroundColor: '#ef4444'
             }]
           },
           options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-              y: { max: 10, beginAtZero: true, grid: { borderDash: [5, 5] } }
+              y: { max: 10, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+              x: { grid: { display: false } }
             }
           }
         });
 
-        // Doughnut
+        if (doughnutChart) doughnutChart.destroy();
         const distData = data.stressDistribution || [];
-        new Chart(document.getElementById('doughnutChart'), {
+        doughnutChart = new Chart(document.getElementById('doughnutChart'), {
           type: 'doughnut',
           data: {
-            labels: distData.map(i => `LV ${i._id}`),
+            labels: distData.map(i => `Level ${i._id}`),
             datasets: [{
               data: distData.map(i => i.count),
-              backgroundColor: ['#48bb78', '#38b2ac', '#4a90e2', '#6b46c1', '#ed64a6', '#e11d48'],
+              backgroundColor: ['#10b981','#38b2ac','#6366f1','#8b5cf6','#ec4899','#ef4444'],
               borderWidth: 0,
-              hoverOffset: 20
+              hoverOffset: 15
             }]
           },
           options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '80%',
-            plugins: { legend: { position: 'right' } }
+            responsive: true, maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: { legend: { position: 'right', labels: { color: '#8892b0', font: { size: 12 } } } }
           }
         });
 
-      } catch (err) { console.error(err); }
-    });
+      } catch (err) {
+        console.error('Dashboard load error:', err);
+      }
+    }
+
+    loadData();
+    setInterval(loadData, 60000); // Auto-refresh every 60s
   </script>
 </body>
 </html>

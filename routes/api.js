@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Mood = require('../models/Mood');
-const Diary = require('../models/Diary');
+const CommunityPost = require('../models/CommunityPost');
 const { GoogleGenAI } = require('@google/genai');
 
 // Helper to determine stress level from emoji
@@ -244,16 +244,89 @@ router.post('/chat', async (req, res) => {
     // Fallback: if no API key, use keyword-based responses
     if (!apiKey) {
       const lowerMsg = message.toLowerCase();
-      let responseText = "I'm here for you. Could you tell me more about how you're feeling?";
-      if (lowerMsg.includes('sad') || lowerMsg.includes('depress') || lowerMsg.includes('cry')) {
-        responseText = "I hear that you're feeling down. It's okay to not be okay. Try writing in your Diary or using the Relax breathing tool.";
-      } else if (lowerMsg.includes('anxi') || lowerMsg.includes('stress') || lowerMsg.includes('overwhelm')) {
-        responseText = "Stress can be tough. Let's take a deep breath together — try the Relax section for a guided exercise.";
-      } else if (lowerMsg.includes('happy') || lowerMsg.includes('good') || lowerMsg.includes('great')) {
-        responseText = "That's wonderful! Keep up the positive energy and don't forget to log your streak today.";
-      } else if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
-        responseText = "Hi! I'm your MindSpace Guide. How are you feeling today?";
+
+      // Helper: pick a random response from an array
+      const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+      const negativeResponses = [
+        "I'm sorry you're feeling this way 💙 Remember, even the darkest nights end with sunrise. Try writing in your Diary — it can really help.",
+        "It's okay to not be okay. Every storm runs out of rain 🌧️ Visit the Heal Sanctuary and give yourself some peace.",
+        "I hear you, and your feelings are completely valid. You are stronger than you feel right now. Take it one breath at a time 🌿",
+        "Hard days remind us that we're human. You don't have to have it all together — just take the next small step 💪",
+        "Sending you warmth 💙 When things feel heavy, try the Relax breathing tool. Even 2 minutes can shift your mindset.",
+        "You matter more than you know. Even when it doesn't feel that way, brighter days are always ahead. I'm here with you 🌱",
+      ];
+
+      const anxietyResponses = [
+        "It's okay to feel overwhelmed sometimes 🌿 Breathe in for 4 seconds, hold for 4, out for 4. Try the Relax section — it really helps.",
+        "Anxiety is your mind trying to protect you. Ground yourself — name 5 things you can see right now 👀 You've got this.",
+        "Stress is temporary. Close your eyes, take 3 deep breaths, and remind yourself: you have overcome hard things before 💪",
+        "When everything feels too much, focus on just this moment. Try the Heal Sanctuary for a calming session 🧘",
+        "You don't have to solve everything at once. Break it into one tiny step. What's the smallest thing you can do right now? 🌱",
+      ];
+
+      const positiveResponses = [
+        "That's amazing to hear! 🌟 Your positive energy is contagious — keep riding that wave!",
+        "Love to see it! 🎉 Don't forget to log your mood today and keep your streak alive!",
+        "You're glowing! ✨ Moments like these are worth capturing — try writing about it in your Diary.",
+        "Wonderful! You deserve every bit of this happiness 😊 Keep nurturing this energy!",
+        "That's the spirit! 🚀 Stay consistent, log your mood, and keep building those healthy habits!",
+      ];
+
+      const goodResponses = [
+        "Glad to hear things are going well 😊 Keep checking in with your Mood Tracker!",
+        "That's great! Small wins add up 🌱 Don't forget to keep your daily streak going!",
+        "Good vibes incoming! ✨ Make sure to log today's mood and celebrate the little things.",
+        "Consistency is key! 🔥 You're building a great habit — keep it up!",
+      ];
+
+      const greetingResponses = [
+        "Hi there! 🌱 I'm your MindSpace Guide. How are you feeling today?",
+        "Hello! 🌿 I'm here to support you. What's on your mind?",
+        "Hey! Welcome back 💙 How has your day been treating you?",
+        "Hi! It's good to see you here. Tell me — how are you feeling right now?",
+      ];
+
+      let responseText = pick([
+        "I'm here for you 🌿 Could you tell me a little more about how you're feeling?",
+        "I'm listening. What's on your mind today? 💙",
+        "Take your time — I'm here for whatever you want to share 🌱",
+      ]);
+
+      if (
+        lowerMsg.includes('unhappy') || lowerMsg.includes('sad') ||
+        lowerMsg.includes('depress') || lowerMsg.includes('cry') ||
+        lowerMsg.includes('not okay') || lowerMsg.includes('bad') ||
+        lowerMsg.includes('hurt') || lowerMsg.includes('lonely') ||
+        lowerMsg.includes('tired') || lowerMsg.includes('hopeless') ||
+        lowerMsg.includes('miss') || lowerMsg.includes('upset')
+      ) {
+        responseText = pick(negativeResponses);
+      } else if (
+        lowerMsg.includes('anxi') || lowerMsg.includes('stress') ||
+        lowerMsg.includes('overwhelm') || lowerMsg.includes('worried') ||
+        lowerMsg.includes('scared') || lowerMsg.includes('panic')
+      ) {
+        responseText = pick(anxietyResponses);
+      } else if (
+        (lowerMsg.includes('happy') && !lowerMsg.includes('unhappy')) ||
+        lowerMsg.includes('great') || lowerMsg.includes('amazing') ||
+        lowerMsg.includes('wonderful') || lowerMsg.includes('fantastic') ||
+        lowerMsg.includes('excited') || lowerMsg.includes('joyful')
+      ) {
+        responseText = pick(positiveResponses);
+      } else if (
+        lowerMsg.includes('good') && !lowerMsg.includes('not good') &&
+        !lowerMsg.includes('no good')
+      ) {
+        responseText = pick(goodResponses);
+      } else if (
+        lowerMsg.includes('hello') || lowerMsg.includes('hi') ||
+        lowerMsg.includes('hey') || lowerMsg.includes('howdy')
+      ) {
+        responseText = pick(greetingResponses);
       }
+
       return res.json({ text: responseText, user: 'Bot' });
     }
 
@@ -276,7 +349,25 @@ router.post('/chat', async (req, res) => {
   }
 });
 
-// -- Admin/NGO Routes --
+// -- Admin: Get User List --
+router.get('/admin/users', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'Unauthorized.' });
+    const userId = authHeader.split(' ')[1];
+    const admin = await User.findById(userId);
+    if (!admin || admin.role !== 'admin') return res.status(403).json({ error: 'Forbidden.' });
+
+    const users = await User.find({}, 'anonymousId streakCount lastActiveDate role createdAt')
+      .sort({ createdAt: -1 })
+      .limit(50);
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 router.get('/admin/stats', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -328,6 +419,59 @@ router.get('/admin/stats', async (req, res) => {
       stressDistribution: stressDist,
       moodsOverTime: moodsTime
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// -- Community Routes --
+// Get recent community posts
+router.get('/community', async (req, res) => {
+  try {
+    const posts = await CommunityPost.find().sort({ createdAt: -1 }).limit(50);
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create a new community post
+router.post('/community', async (req, res) => {
+  try {
+    const { anonymousId, text, tag } = req.body;
+    if (!text) return res.status(400).json({ error: 'Post text is required.' });
+
+    const newPost = new CommunityPost({
+      anonymousId,
+      text,
+      tag: tag || 'Vent'
+    });
+    await newPost.save();
+
+    res.json({ success: true, post: newPost });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Toggle like on a community post
+router.post('/community/like/:postId', async (req, res) => {
+  try {
+    const { anonymousId } = req.body;
+    const { postId } = req.params;
+
+    const post = await CommunityPost.findById(postId);
+    if (!post) return res.status(404).json({ error: 'Post not found.' });
+
+    const index = post.likes.indexOf(anonymousId);
+    if (index === -1) {
+      post.likes.push(anonymousId);
+    } else {
+      post.likes.splice(index, 1);
+    }
+
+    await post.save();
+    res.json({ success: true, likes: post.likes.length, isLiked: index === -1 });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

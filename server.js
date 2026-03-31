@@ -113,6 +113,12 @@ io.on('connection', (socket) => {
     const roomId = activeRooms[socket.id];
     if (roomId) endRoom(roomId);
   });
+
+  // --- Community Features ---
+  socket.on('send_community_post', (data) => {
+    // Broadcast to everyone else
+    socket.broadcast.emit('new_community_post', data);
+  });
 });
 
 const PORT = process.env.PORT || 3000;
