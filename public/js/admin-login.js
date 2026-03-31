@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const username = document.getElementById('admin-username').value;
     const password = document.getElementById('admin-password').value;
-    
+
     // We send to the standard auth endpoint, but we check role upon success
     try {
       const res = await fetch(`${API_URL}/auth/login`, {
@@ -41,6 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminToken = localStorage.getItem('admin_token');
   const curUser = JSON.parse(localStorage.getItem('mindspace_user') || 'null');
   if (adminToken && curUser && curUser.role === 'admin') {
-      window.location.href = 'admin.html';
+    window.location.href = 'admin.html';
   }
 });

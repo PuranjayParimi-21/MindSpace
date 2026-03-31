@@ -196,8 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { socket.emit('find_match'); }, 2000);
   });
 
-  socket.on('message', (data) => {
-    appendMessage(data.user, data.text, false);
+  socket.on('anon_message', (data) => {
+    appendMessage(data.user, data.text);
   });
 
   const appendMessage = (user, text, isSystem = false, isSelf = false) => {

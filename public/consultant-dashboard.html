@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NGO Consultant Support Center | MindSpace</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    :root {
+      --priority-bg: #fee2e2;
+      --priority-text: #ef4444;
+      --urgent-glow: rgba(239, 68, 68, 0.1);
+    }
+
+    body { background: #f1f5f9; overflow: hidden; }
+
+    .support-console {
+      display: grid;
+      grid-template-columns: 320px 1fr 300px;
+      height: calc(100vh - 100px);
+      background: white;
+      margin: 1rem 2rem;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    /* 1. Sidebar: Active Chats */
+    .chats-sidebar {
+      border-right: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      background: #fafafa;
+    }
+
+    .sidebar-header { padding: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+    .chat-item {
+      padding: 1.2rem;
+      border-bottom: 1px solid rgba(0,0,0,0.03);
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .chat-item:hover { background: #f1f5f9; }
+    .chat-item.active { background: #eff6ff; border-left: 4px solid var(--primary); }
+    .chat-item.urgent { background: var(--urgent-glow); border-left: 4px solid var(--priority-text); }
+
+    .wait-timer { font-size: 0.7rem; color: #64748b; font-weight: 700; }
+    .urgent .wait-timer { color: var(--priority-text); }
+
+    /* 2. Main Window: Conversation */
+    .conversation-view {
+      display: flex;
+      flex-direction: column;
+      background: white;
+    }
+
+    .conv-header {
+      padding: 1rem 2rem;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .messages-area {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .bubble {
+      max-width: 70%;
+      padding: 1rem 1.4rem;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .received { background: white; align-self: flex-start; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .sent { background: var(--primary); color: white; align-self: flex-end; }
+
+    /* Empathy Tools */
+    .empathy-tools {
+      padding: 0.8rem 2rem;
+      background: #fafafa;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+    }
+
+    .canned-btn {
+      background: white;
+      border: 1px solid rgba(0,0,0,0.1);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: #64748b;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .canned-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    .input-box {
+      padding: 1rem 2rem 2rem;
+      display: flex;
+      gap: 15px;
+    }
+
+    /* 3. Context Panel */
+    .context-panel {
+      padding: 2rem;
+      background: #fafafa;
+      border-left: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .user-profile { text-align: center; margin-bottom: 2rem; }
+    .status-card {
+      background: white;
+      padding: 1.2rem;
+      border-radius: 15px;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(0,0,0,0.03);
+    }
+  </style>
+</head>
+<body>
+  <header style="background: white;">
+    <a href="admin.html" class="logo">
+      <img src="images/logo.png" alt="MindSpace" style="height: 38px; width: 38px; border-radius: 10px; vertical-align: middle;">
+      NGO <span style="font-size: 0.7rem; background: var(--primary); color: white; padding: 2px 8px; border-radius: 6px; margin-left: 8px;">Support Center</span>
+    </a>
+    <nav>
+      <a href="admin.html">Dashboard</a>
+      <a href="consultant-dashboard.html" class="active">Support Console</a>
+      <a href="#" id="btn-logout" style="color: #ef4444; font-weight: 700;">Logout</a>
+    </nav>
+  </header>
+
+  <div class="support-console">
+    <!-- Active Chats Sidebar -->
+    <aside class="chats-sidebar">
+      <div class="sidebar-header">
+        <h4 style="margin: 0;">Active Support Requests</h4>
+      </div>
+      <div id="active-chats-list" class="queue-list">
+        <!-- JS Polled Sessions -->
+      </div>
+    </aside>
+
+    <!-- Main Conversation View -->
+    <main class="conversation-view">
+      <div id="no-chat-selected" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.4;">
+        <div style="font-size: 4rem;">🕊️</div>
+        <h3>Select a user to begin supporting</h3>
+      </div>
+
+      <div id="chat-active-window" style="display: none; height: 100%; flex-direction: column;">
+        <div class="conv-header">
+          <h4 id="active-user-title">User Name</h4>
+          <button class="btn btn-primary" id="btn-resolve" style="background: var(--success); font-size: 0.8rem; padding: 0.5rem 1rem;">End Session ✅</button>
+        </div>
+
+        <div class="messages-area" id="messages-container"></div>
+
+        <!-- Empathy Toolkit -->
+        <div class="empathy-tools">
+          <button class="canned-btn" onclick="injectMsg('I hear you, and I\'m here to listen.')">I hear you...</button>
+          <button class="canned-btn" onclick="injectMsg('That sounds really difficult to navigate.')">That sounds difficult.</button>
+          <button class="canned-btn" onclick="injectMsg('Take your time, there is no rush here.')">No rush...</button>
+          <button class="canned-btn" onclick="injectMsg('You\'re doing the right thing by speaking up.')">Doing right thing...</button>
+        </div>
+
+        <div class="input-box">
+          <input type="text" id="chat-input" placeholder="Type your empathetic response..." style="margin-bottom: 0;">
+          <button class="btn btn-primary" id="btn-send" style="padding: 0 1.5rem;">Send ✨</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- User Context Panel -->
+    <aside class="context-panel">
+      <div class="user-profile">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">👤</div>
+        <h3 id="panel-username">User</h3>
+        <p class="text-muted" id="panel-id" style="font-size: 0.7rem;">ID: -</p>
+      </div>
+
+      <div class="status-card">
+        <p class="text-muted" style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; margin-bottom: 10px;">Stress Level</p>
+        <div id="panel-stress-bar" style="height: 8px; background: #eee; border-radius: 4px; overflow: hidden;">
+          <div id="panel-stress-fill" style="width: 0%; height: 100%; background: var(--primary);"></div>
+        </div>
+        <p id="panel-stress-text" style="font-size: 0.8rem; margin-top: 8px; font-weight: 700;">Loading...</p>
+      </div>
+
+      <div class="status-card">
+        <p class="text-muted" style="font-size: 0.7rem; text-transform: uppercase; font-weight: 800; margin-bottom: 10px;">Session Info</p>
+        <p style="font-size: 0.9rem; margin-bottom: 4px;">Status: <span id="panel-status-tag" style="color: var(--success); font-weight: 700;">Active</span></p>
+        <p style="font-size: 0.9rem;">Duration: <span id="panel-duration">0m</span></p>
+      </div>
+    </aside>
+  </div>
+
+  <script src="js/consultant-dashboard.js"></script>
+</body>
+</html>

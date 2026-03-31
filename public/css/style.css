@@ -539,6 +539,65 @@ textarea:focus, input:focus {
   color: #64748b;
 }
 
+/* AI Diary Analysis Styles */
+.ai-insight-card {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(219, 39, 119, 0.1) 100%);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  animation: slideDownFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  max-width: 100%;
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-insight-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  color: #7c3aed;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ai-insight-text {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+.analyze-btn {
+  background: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.analyze-btn:hover {
+  background: #7c3aed;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.analyze-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .tag-opt.selected {
   background: white;
   border-color: var(--primary);

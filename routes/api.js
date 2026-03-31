@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require('../models/User');
 const Mood = require('../models/Mood');
 const CommunityPost = require('../models/CommunityPost');
+const Message = require('../models/Message');
+const ChatSession = require('../models/ChatSession');
 const { GoogleGenAI } = require('@google/genai');
 
 // Helper to determine stress level from emoji
@@ -230,6 +232,51 @@ router.get('/diary/:userId', async (req, res) => {
     res.json(diaries);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Analyze diary content with AI
+router.post('/diary/analyze', async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ error: 'Diary content is required for analysis.' });
+
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    // Fallback: simple mood detector if no API key
+    if (!apiKey) {
+      const lower = text.toLowerCase();
+      let mood = 'Thoughtful';
+      let tip = 'Continue reflecting on your journey.';
+      
+      if (lower.match(/sad|lonely|hurt|bad|depress/)) {
+        mood = 'Heavier Emotions Detected';
+        tip = 'Be extra kind to yourself today. Try a 5-minute breathing exercise in the Relax section.';
+      } else if (lower.match(/happy|great|good|win|proud/)) {
+        mood = 'Positive Growth';
+        tip = 'Keep this momentum going! Log a small win in your diary to celebrate.';
+      }
+
+      return res.json({ 
+        analysis: `Mood: ${mood}. ${tip}`,
+        user: 'Assistant' 
+      });
+    }
+
+    // AI-Powered Reflection Assistant
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.1-flash',
+      contents: text,
+      config: {
+        systemInstruction: "You are the 'MindSpace Reflection Assistant'. Analyze this diary entry for emotional tone, key themes, and provide 2-3 gentle, supportive insights or actionable wellness steps. Maintain a warm, encouraging, and non-prescriptive tone. Keep it concise (3-4 sentences max)."
+      }
+    });
+
+    res.json({ analysis: response.text, user: 'Assistant' });
+  } catch (err) {
+    console.error('Gemini Analysis Error:', err.message);
+    res.json({ analysis: "Your reflection is a powerful step. Take a deep breath and stay present with yourself.", user: 'Assistant' });
   }
 });
 
@@ -472,6 +519,90 @@ router.post('/community/like/:postId', async (req, res) => {
 
     await post.save();
     res.json({ success: true, likes: post.likes.length, isLiked: index === -1 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// -- Chat Routes --
+// Get list of mentors and admins
+router.get('/chat/mentors', async (req, res) => {
+  try {
+    const mentors = await User.find({ role: { $in: ['admin', 'mentor'] } }, 'username anonymousId role');
+    res.json(mentors);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// -- NGO Consultant Side --
+// Get all active support sessions for the NGO dashboard
+router.get('/chat/active-sessions', async (req, res) => {
+  try {
+    const activeSessions = await ChatSession.find({ status: 'active' })
+                                           .sort({ updatedAt: -1 })
+                                           .populate('userId', 'username anonymousId');
+
+    // Fetch latest mood for each session for prioritization
+    const queue = [];
+    for (const session of activeSessions) {
+      if (!session.userId) continue;
+      const latestMood = await Mood.findOne({ userId: session.userId._id }).sort({ date: -1 });
+      queue.push({
+        sessionId: session._id,
+        userId: session.userId._id,
+        username: session.userId.username || session.userId.anonymousId,
+        lastMessage: session.lastMessage,
+        lastSender: session.lastSender,
+        updatedAt: session.updatedAt,
+        stressLevel: latestMood ? latestMood.stressLevel : 0,
+        isPriority: latestMood ? latestMood.stressLevel >= 8 : false
+      });
+    }
+
+    res.json(queue);
+  } catch (err) {
+    res.status(500).send("Error fetching chats");
+  }
+});
+
+// Resolve a support session
+router.post('/chat/resolve', async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    await ChatSession.findByIdAndUpdate(sessionId, { status: 'resolved' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).send("Error resolving session");
+  }
+});
+
+// Get chat history with a specific partner
+router.get('/chat/history/:userId/:partnerId', async (req, res) => {
+  try {
+    const { userId, partnerId } = req.params;
+    
+    // If partnerId is 'consultant_pool', get ALL messages where this user is sender or receiver with any admin/mentor
+    let query;
+    if (partnerId === 'consultant_pool') {
+      const mentors = await User.find({ role: { $in: ['admin', 'mentor'] } }).distinct('_id');
+      query = {
+        $or: [
+          { senderId: userId, receiverId: { $in: mentors } },
+          { senderId: { $in: mentors }, receiverId: userId }
+        ]
+      };
+    } else {
+      query = {
+        $or: [
+          { senderId: userId, receiverId: partnerId },
+          { senderId: partnerId, receiverId: userId }
+        ]
+      };
+    }
+
+    const history = await Message.find(query).sort({ timestamp: 1 });
+    res.json(history);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

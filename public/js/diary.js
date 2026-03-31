@@ -51,12 +51,76 @@ const loadDiaries = async () => {
     
     const dateStr = new Date(entry.date).toLocaleString();
     div.innerHTML = `
-      <h4 style="margin-bottom: 5px">${entry.title}</h4>
-      <p style="font-size: 0.95rem; margin-bottom: 5px">${entry.content}</p>
-      <small class="text-muted">${dateStr} ${entry._id ? '' : '(Unsynced, will sync when online)'}</small>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div style="flex: 1;">
+          <h4 style="margin-bottom: 5px">${entry.title}</h4>
+          <p style="font-size: 0.95rem; margin-bottom: 15px; color: var(--text-dark);">${entry.content}</p>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <small class="text-muted">${dateStr} ${entry._id ? '' : '(Unsynced)'}</small>
+            ${entry._id ? `<button class="analyze-btn" data-id="${entry._id}" onclick="analyzeDiary('${entry._id}')">Get AI Insights ✨</button>` : ''}
+          </div>
+        </div>
+      </div>
+      <div id="ai-insight-${entry._id}" style="display: none;"></div>
     `;
     listEl.appendChild(div);
   });
+};
+
+const analyzeDiary = async (entryId) => {
+  const btn = document.querySelector(`.analyze-btn[data-id="${entryId}"]`);
+  const insightContainer = document.getElementById(`ai-insight-${entryId}`);
+  
+  if (!btn || !insightContainer) return;
+
+  // Check if we already have a cached analysis for this entry
+  const cachedAnalysis = localStorage.getItem(`ai_analysis_${entryId}`);
+  if (cachedAnalysis) {
+    renderAIInsight(insightContainer, cachedAnalysis);
+    btn.style.display = 'none';
+    return;
+  }
+
+  // Find the entry content
+  const entries = JSON.parse(localStorage.getItem('cached_diaries') || '[]');
+  const entry = entries.find(e => e._id === entryId);
+  if (!entry) return alert('Cannot analyze unsynced entries.');
+
+  btn.disabled = true;
+  btn.innerText = 'Analyzing Reflection... 🧠';
+
+  try {
+    const res = await fetch(`${API_URL}/diary/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: entry.content })
+    });
+    const data = await res.json();
+    
+    if (data.analysis) {
+      localStorage.setItem(`ai_analysis_${entryId}`, data.analysis);
+      renderAIInsight(insightContainer, data.analysis);
+      btn.style.display = 'none';
+    } else {
+      throw new Error('Analysis failed');
+    }
+  } catch (err) {
+    console.error('Analysis failed', err);
+    btn.innerText = 'Analysis failed. Try again?';
+    btn.disabled = false;
+  }
+};
+
+const renderAIInsight = (container, text) => {
+  container.style.display = 'block';
+  container.innerHTML = `
+    <div class="ai-insight-card">
+      <div class="ai-insight-header">
+        <span style="font-size: 1.2rem;">✨</span> MindSpace Reflection Assistant
+      </div>
+      <div class="ai-insight-text">${text.replace(/\n/g, '<br>')}</div>
+    </div>
+  `;
 };
 
 const syncOfflineData = async () => {

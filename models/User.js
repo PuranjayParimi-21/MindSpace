@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
   password: { type: String },
   streakCount: { type: Number, default: 0 },
   lastActiveDate: { type: Date, default: Date.now },
-  role: { type: String, enum: ['user', 'admin'], default: 'user' }
+  role: { type: String, enum: ['user', 'admin', 'mentor'], default: 'user' }
 });
 
 module.exports = mongoose.model('User', UserSchema);

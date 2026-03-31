@@ -5,21 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Pro | MindSpace</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/socket.io/socket.io.js"></script> <!-- Added Socket.io -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --surface2: #22263a;
-      --border: rgba(255,255,255,0.06);
-      --text: #f0f4ff;
+      --bg: #11111e;
+      --surface: #1a1a2e;
+      --surface2: #252545;
+      --border: rgba(140, 122, 230, 0.15);
+      --text: #ffffff;
       --muted: #8892b0;
-      --primary: #6366f1;
-      --primary-glow: rgba(99,102,241,0.25);
+      --primary: #8c7ae6;
+      --primary-glow: rgba(140, 122, 230, 0.2);
       --success: #10b981;
       --warning: #f59e0b;
       --danger: #ef4444;
-      --accent: #ec4899;
+      --accent: #ed4899;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
@@ -394,22 +395,165 @@
     .alert-row .note { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
     .stress-badge { background: var(--danger); color: white; padding: 4px 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; }
 
-    /* ── Animations ── */
-    .fade-up {
-      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      opacity: 0;
-      transform: translateY(20px);
+    /* ── Support Queue Expansion ── */
+    .support-container {
+      display: grid;
+      grid-template-columns: 320px 1fr 280px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      height: 700px;
+      overflow: hidden;
+      margin-bottom: 2.5rem;
     }
 
-    @keyframes fadeUp {
-      to { opacity: 1; transform: translateY(0); }
+    .support-sidebar {
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      background: rgba(0,0,0,0.1);
     }
 
-    .delay-1 { animation-delay: 0.1s; }
-    .delay-2 { animation-delay: 0.2s; }
-    .delay-3 { animation-delay: 0.3s; }
-    .delay-4 { animation-delay: 0.4s; }
-    .delay-5 { animation-delay: 0.5s; }
+    .support-queue-list { flex: 1; overflow-y: auto; }
+
+    .support-item {
+      padding: 1.2rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .support-item:hover { background: var(--surface2); }
+    .support-item.active { background: var(--primary-glow); border-left: 4px solid var(--primary); }
+    .support-item.urgent { 
+      border-left: 4px solid var(--danger); 
+      background: rgba(239,68,68,0.08); 
+      animation: urgentPulse 2s infinite;
+    }
+
+    @keyframes urgentPulse {
+      0% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
+      50% { box-shadow: inset 0 0 15px rgba(239, 68, 68, 0.15); }
+      100% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
+    }
+
+    .support-main {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    .support-messages {
+      flex: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .support-bubble {
+      max-width: 75%;
+      padding: 0.9rem 1.4rem;
+      border-radius: 18px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .support-bubble.received { 
+      background: #252545; 
+      align-self: flex-start; 
+      border-radius: 0 15px 15px 15px;
+      border: 1px solid #30304b;
+      color: #fff;
+    }
+    .support-bubble.sent { 
+      background: linear-gradient(135deg, #4834d4, #686de0); 
+      color: white; 
+      align-self: flex-end; 
+      border-radius: 15px 15px 0 15px;
+      box-shadow: 0 4px 10px rgba(72, 52, 212, 0.3);
+    }
+    
+    .support-time { font-size: 0.65rem; color: var(--muted); margin-top: 4px; display: block; }
+    .sent .support-time { text-align: right; }
+
+    .empathy-toolkit {
+      display: flex;
+      gap: 10px;
+      padding: 0.5rem 2rem;
+      background: rgba(0,0,0,0.1);
+    }
+    .empathy-btn {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--primary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .empathy-btn:hover { background: var(--primary); color: white; }
+
+    .unread-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--primary);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--primary);
+      display: inline-block;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    .status-online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .status-offline { background: var(--muted); opacity: 0.5; }
+
+    .support-input-area {
+      padding: 1.5rem 2rem;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+    }
+
+    .support-input-area input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.8rem 1.2rem;
+      border-radius: 12px;
+      outline: none;
+    }
+
+    .support-context {
+      padding: 1.5rem;
+      background: rgba(0,0,0,0.1);
+      border-left: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .hidden { display: none !important; }
+    
+    .status-tag {
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .status-urgent { background: var(--danger); color: white; }
+
+    /* Sound notification pulse */
+    .notif-dot { width: 8px; height: 8px; background: var(--danger); border-radius: 50%; display: inline-block; margin-left: 8px; }
   </style>
 </head>
 <body>
@@ -429,6 +573,9 @@
     </a>
     <a href="#section-alerts" class="sidebar-item">
       <span class="icon">🚨</span> Alerts
+    </a>
+    <a href="#" id="side-btn-support" class="sidebar-item">
+      <span class="icon">💬</span> Support Queue <span id="support-notif" class="notif-dot hidden"></span>
     </a>
 
     <div class="sidebar-section">Analytics</div>
@@ -557,6 +704,62 @@
         <p style="color: var(--muted); text-align:center; padding: 2rem;">Loading alerts...</p>
       </div>
     </div>
+
+    <!-- Integrated Support Hub -->
+    <div id="section-support" class="panel fade-up hidden" style="padding: 0; border: none;">
+      <div class="panel-header" style="padding: 1.5rem 2rem;">
+        <div class="panel-title">💬 Live Support Queue</div>
+        <button class="btn-ghost" id="btn-back-stats">← Back to Analytics</button>
+      </div>
+
+      <div class="support-container">
+        <!-- Sidebar -->
+        <aside class="support-sidebar">
+          <div class="support-queue-list" id="support-queue-items">
+            <!-- Polled via JS -->
+          </div>
+        </aside>
+
+        <!-- Main Window -->
+        <main class="support-main">
+          <div id="support-placeholder" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.3;">
+            <div style="font-size: 4rem;">📨</div>
+            <h3>Select a user to begin chat</h3>
+          </div>
+
+          <div id="support-active-chat" class="hidden" style="height: 100%; display: flex; flex-direction: column;">
+            <div class="support-messages" id="support-msg-container"></div>
+            <div class="empathy-toolkit">
+              <span style="font-size: 0.7rem; color: var(--muted); align-self: center; margin-right: 5px;">Toolkit:</span>
+              <button class="empathy-btn" onclick="sendQuickMsg('I am here for you. Take your time.')">Listening 👂</button>
+              <button class="empathy-btn" onclick="sendQuickMsg('It\'s completely normal to feel this way.')">Validate ✨</button>
+              <button class="empathy-btn" onclick="sendQuickMsg('Shall we try a 2-minute breathing exercise together?')">Breathing 🧘</button>
+            </div>
+            <div class="support-input-area">
+              <input type="text" id="support-reply-input" placeholder="Type an empathetic reply...">
+              <button class="btn-pro" id="btn-send-support">Send ✨</button>
+            </div>
+          </div>
+        </main>
+
+        <!-- Context Panel -->
+        <aside class="support-context">
+          <h4 id="ctx-username">User</h4>
+          <p class="text-muted" id="ctx-id" style="font-size: 0.7rem; margin-bottom: 1rem;">ID: --</p>
+          <div style="margin-top: 1rem;">
+            <p style="font-size: 0.7rem; font-weight: 800; color: var(--muted); text-transform: uppercase;">Stress Status</p>
+            <div style="height: 6px; background: var(--bg); border-radius: 3px; margin: 8px 0; overflow: hidden;">
+              <div id="ctx-stress-fill" style="width: 0%; height: 100%; background: var(--primary);"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <p id="ctx-stress-text" style="font-weight: 700;">Loading...</p>
+              <a href="#" id="link-mood-history" style="font-size: 0.65rem; color: var(--primary); text-decoration: none; font-weight: 700;">View History →</a>
+            </div>
+          </div>
+          <button class="btn-pro" id="btn-resolve-session" style="width: 100%; margin-top: 2rem; background: var(--success);">Resolve ✅</button>
+        </aside>
+      </div>
+    </div>
   </main>
 
   <script>
@@ -661,7 +864,10 @@
                   <div class="note">${a.note ? `"${a.note}"` : 'No note provided.'}</div>
                 </div>
               </div>
-              <span class="stress-badge">LV ${a.stressLevel}</span>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <button class="btn-pro" style="padding: 0.3rem 0.8rem; font-size: 0.7rem;" onclick="jumpToSupport('${a.userId?._id}')">Chat Now 💬</button>
+                <span class="stress-badge">LV ${a.stressLevel}</span>
+              </div>
             `;
             alertList.appendChild(div);
           });
@@ -748,8 +954,238 @@
       }
     }
 
+    // --- Support Logic ---
+    const socket = io();
+    let currentSupportUser = null;
+    let currentSessionId = null;
+    const userStatuses = {}; // { userId: 'online' | 'offline' }
+    const unreadCounts = {}; // { userId: Number }
+
+    // View Toggling
+    const sideBtnSupport = document.getElementById('side-btn-support');
+    const statsSections = ['section-charts', 'section-users', 'section-alerts', 'metrics-grid', 'wellness-banner'];
+    
+    function showSupportView() {
+      statsSections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+      document.getElementById('section-support').classList.remove('hidden');
+      sideBtnSupport.classList.add('active');
+      document.querySelector('.sidebar-item[href="#"]').classList.remove('active');
+      fetchSupportSessions();
+    }
+
+    function showDashboardView() {
+      statsSections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('hidden');
+      });
+      document.getElementById('section-support').classList.add('hidden');
+      sideBtnSupport.classList.remove('active');
+      document.querySelector('.sidebar-item[href="#"]').classList.add('active');
+    }
+
+    sideBtnSupport.onclick = (e) => { e.preventDefault(); showSupportView(); };
+    document.getElementById('btn-back-stats').onclick = showDashboardView;
+
+    // Fetch Sessions
+    async function fetchSupportSessions() {
+      const res = await fetch(`${API}/chat/active-sessions`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` } });
+      const data = await res.json();
+      renderSupportQueue(data);
+    }
+
+    function renderSupportQueue(sessions) {
+      const list = document.getElementById('support-queue-items');
+      list.innerHTML = '';
+      sessions.forEach(s => {
+        const div = document.createElement('div');
+        const lastUpdate = new Date(s.updatedAt);
+        const diffMins = Math.floor((new Date() - lastUpdate) / 60000);
+        const isUrgent = diffMins >= 2 && s.lastSender === 'user';
+        const isOnline = userStatuses[s.userId] === 'online';
+        const unread = unreadCounts[s.userId] || 0;
+        
+        div.className = `support-item ${currentSessionId === s.sessionId ? 'active' : ''} ${isUrgent ? 'urgent' : ''}`;
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:baseline;">
+            <div style="display:flex; align-items:center;">
+              <span class="status-dot ${isOnline ? 'status-online' : 'status-offline'}"></span>
+              <span style="font-weight:700;">${s.username}</span>
+              ${unread > 0 ? '<span class="unread-dot" style="margin-left:8px;"></span>' : ''}
+            </div>
+            <span style="font-size:0.6rem; color:var(--muted);">${diffMins}m ago</span>
+          </div>
+          <div style="font-size:0.75rem; color:var(--muted); margin-top:4px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">
+            ${s.lastMessage || '...'}
+          </div>
+        `;
+        div.onclick = () => {
+          unreadCounts[s.userId] = 0; // Clear unread on click
+          selectSupportSession(s);
+        };
+        list.appendChild(div);
+      });
+    }
+
+    async function selectSupportSession(s) {
+      currentSupportUser = s.userId;
+      currentSessionId = s.sessionId;
+      document.getElementById('support-placeholder').classList.add('hidden');
+      document.getElementById('support-active-chat').classList.remove('hidden');
+      document.getElementById('ctx-username').innerText = s.username;
+      document.getElementById('ctx-id').innerText = `ID: ${s.userId.substring(0,8)}`;
+      document.getElementById('ctx-stress-fill').style.width = `${s.stressLevel * 10}%`;
+      document.getElementById('ctx-stress-text').innerText = `${s.stressLevel}/10 Stress`;
+
+      socket.emit('join_chat', { userId: s.userId });
+      
+      const res = await fetch(`${API}/chat/history/${s.userId}/consultant_pool`);
+      const history = await res.json();
+      const msgBox = document.getElementById('support-msg-container');
+      msgBox.innerHTML = '';
+      history.forEach(m => appendSupportMsg(m));
+      fetchSupportSessions();
+    }
+
+    function appendSupportMsg(m) {
+      const msgBox = document.getElementById('support-msg-container');
+      const currentUserId = JSON.parse(localStorage.getItem('mindspace_user'))._id;
+      const isSelf = m.isConsultant || (m.senderId && m.senderId.toString() === currentUserId.toString());
+      
+      const div = document.createElement('div');
+      div.className = `support-bubble ${isSelf ? 'sent' : 'received'}`;
+      
+      const timeStr = new Date(m.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      div.innerHTML = `
+        <div>${m.message || m.text}</div>
+        <span class="support-time">${timeStr}</span>
+      `;
+      msgBox.appendChild(div);
+      
+      // Auto-Scroll to Bottom
+      msgBox.scrollTop = msgBox.scrollHeight;
+      
+      // Clear typing indicator
+      const el = document.getElementById('typing-indicator');
+      if (el) el.remove();
+    }
+
+    document.getElementById('btn-send-support').onclick = sendSupportReply;
+    document.getElementById('support-reply-input').onkeypress = (e) => { if(e.key === 'Enter') sendSupportReply(); };
+
+    function sendSupportReply(textOverride) {
+      const input = document.getElementById('support-reply-input');
+      const text = textOverride || input.value.trim();
+      if (!text || !currentSupportUser) return;
+      
+      socket.emit('send_message', {
+        userId: currentSupportUser, // Room ID
+        sender: 'admin',
+        text: text,
+        senderId: JSON.parse(localStorage.getItem('mindspace_user'))._id,
+        receiverId: currentSupportUser,
+        isConsultant: true
+      });
+      if (!textOverride) input.value = '';
+      
+      // Stop typing
+      socket.emit('support_stop_typing', { userId: JSON.parse(localStorage.getItem('mindspace_user'))._id, isConsultant: true, partnerId: currentSupportUser });
+    }
+
+    function sendQuickMsg(val) {
+      sendSupportReply(val);
+    }
+
+    // Typing Logic
+    let typingTimeout;
+    document.getElementById('support-reply-input').oninput = () => {
+      socket.emit('support_typing', { userId: currentSupportUser, isConsultant: true, partnerId: currentSupportUser });
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        socket.emit('support_stop_typing', { userId: currentSupportUser, isConsultant: true, partnerId: currentSupportUser });
+      }, 2000);
+    };
+
+    socket.on('support_typing_status', (data) => {
+      if (data.isTyping && !document.getElementById('typing-indicator')) {
+        const div = document.createElement('div');
+        div.id = 'typing-indicator';
+        div.className = 'support-bubble received';
+        div.style.fontStyle = 'italic';
+        div.style.opacity = '0.7';
+        div.innerText = 'User is typing...';
+        document.getElementById('support-msg-container').appendChild(div);
+        document.getElementById('support-msg-container').scrollTop = document.getElementById('support-msg-container').scrollHeight;
+      } else if (!data.isTyping) {
+        const el = document.getElementById('typing-indicator');
+        if (el) el.remove();
+      }
+    });
+
+    socket.on('receive_message', (data) => {
+      // Comparison safety
+      if (currentSupportUser && (currentSupportUser.toString() === data.senderId.toString() || currentSupportUser.toString() === data.receiverId.toString())) {
+        appendSupportMsg(data);
+      } else if (!data.isConsultant) {
+        // Mark as unread if not currently viewing
+        unreadCounts[data.senderId] = (unreadCounts[data.senderId] || 0) + 1;
+      }
+      
+      // Update sidebar snippet in real-time
+      const sidebarItem = document.querySelector(`.support-item[onclick*="${data.senderId}"]`) || document.querySelector(`.support-item[onclick*="${data.receiverId}"]`);
+      if (sidebarItem) {
+        const snippet = sidebarItem.querySelector('div:last-child');
+        if (snippet) snippet.innerText = data.message || data.text;
+      }
+      
+      fetchSupportSessions();
+    });
+
+    socket.on('user_status_update', (data) => {
+      userStatuses[data.userId] = data.status;
+      fetchSupportSessions();
+    });
+
+    socket.on('support_queue_update', () => {
+      document.getElementById('support-notif').classList.remove('hidden');
+      fetchSupportSessions();
+    });
+
+    async function jumpToSupport(userId) {
+      showSupportView();
+      // Wait for sessions to load
+      setTimeout(async () => {
+        const res = await fetch(`${API}/chat/active-sessions`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` } });
+        const sessions = await res.json();
+        const found = sessions.find(s => s.userId === userId);
+        if (found) selectSupportSession(found);
+        else {
+          console.log("No active session found for user yet.");
+        }
+      }, 500);
+    }
+
+    document.getElementById('btn-resolve-session').onclick = async () => {
+      if (!currentSessionId) return;
+      try {
+        await fetch(`${API}/chat/resolve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: currentSessionId })
+        });
+        currentSessionId = null;
+        currentSupportUser = null;
+        document.getElementById('support-active-chat').classList.add('hidden');
+        document.getElementById('support-placeholder').classList.remove('hidden');
+        fetchSupportSessions();
+      } catch (err) { console.error('Resolve error:', err); }
+    };
+
     loadData();
-    setInterval(loadData, 60000); // Auto-refresh every 60s
+    setInterval(loadData, 60000); 
   </script>
 </body>
 </html>
